@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.printer.settings
+package com.google.virtualprinter.settings
 
 import android.content.Context
 import android.net.Uri
@@ -42,11 +42,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
-import com.example.printer.printer.PrinterService
-import com.example.printer.utils.FileUtils
-import com.example.printer.utils.IppAttributesUtils
-import com.example.printer.utils.PreferenceUtils
-import com.example.printer.utils.PrinterDiscoveryUtils
+import com.google.virtualprinter.printer.PrinterService
+import com.google.virtualprinter.utils.FileUtils
+import com.google.virtualprinter.utils.IppAttributesUtils
+import com.google.virtualprinter.utils.PreferenceUtils
+import com.google.virtualprinter.utils.PrinterDiscoveryUtils
 import com.hp.jipp.encoding.AttributeGroup
 import com.hp.jipp.encoding.Tag
 import kotlinx.coroutines.launch

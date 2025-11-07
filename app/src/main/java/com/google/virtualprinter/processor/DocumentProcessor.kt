@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.printer.processor
+package com.google.virtualprinter.processor
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -25,10 +25,10 @@ import android.graphics.pdf.PdfDocument
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
 import android.util.Log
-import com.example.printer.queue.PrintJob
-import com.example.printer.queue.PrintJobQueue
-import com.example.printer.utils.DocumentType
-import com.example.printer.utils.DocumentTypeUtils
+import com.google.virtualprinter.queue.PrintJob
+import com.google.virtualprinter.queue.PrintJobQueue
+import com.google.virtualprinter.utils.DocumentType
+import com.google.virtualprinter.utils.DocumentTypeUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream

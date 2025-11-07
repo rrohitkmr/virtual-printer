@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.printer.plugins
+package com.google.virtualprinter.plugins
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -23,11 +23,11 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.Log
-import com.example.printer.logging.LogCategory
-import com.example.printer.logging.LogLevel
-import com.example.printer.logging.PrinterLogger
-import com.example.printer.queue.PrintJob
-import com.example.printer.queue.PrintJobState
+import com.google.virtualprinter.logging.LogCategory
+import com.google.virtualprinter.logging.LogLevel
+import com.google.virtualprinter.logging.PrinterLogger
+import com.google.virtualprinter.queue.PrintJob
+import com.google.virtualprinter.queue.PrintJobState
 import com.hp.jipp.encoding.AttributeGroup
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
@@ -929,12 +929,12 @@ class DocumentModifierPlugin : PrinterPlugin {
         
         return try {
             // Detect document type
-            val documentType = com.example.printer.utils.DocumentTypeUtils.detectDocumentType(documentBytes)
+            val documentType = com.google.virtualprinter.utils.DocumentTypeUtils.detectDocumentType(documentBytes)
             
             val modifiedBytes = when (documentType) {
-                com.example.printer.utils.DocumentType.PDF -> addWatermarkToPdf(documentBytes)
-                com.example.printer.utils.DocumentType.JPEG,
-                com.example.printer.utils.DocumentType.PNG -> addWatermarkToImage(documentBytes)
+                com.google.virtualprinter.utils.DocumentType.PDF -> addWatermarkToPdf(documentBytes)
+                com.google.virtualprinter.utils.DocumentType.JPEG,
+                com.google.virtualprinter.utils.DocumentType.PNG -> addWatermarkToImage(documentBytes)
                 else -> {
                     Log.d("DocumentModifierPlugin", "Watermarking not supported for type: $documentType")
                     null

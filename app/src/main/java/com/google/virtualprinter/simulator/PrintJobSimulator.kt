@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.example.printer.simulator
+package com.google.virtualprinter.simulator
 
 import android.content.Context
 import android.util.Log
-import com.example.printer.queue.PrintJob
-import com.example.printer.queue.PrintJobQueue
-import com.example.printer.queue.PrintJobState
+import com.google.virtualprinter.queue.PrintJob
+import com.google.virtualprinter.queue.PrintJobQueue
+import com.google.virtualprinter.queue.PrintJobState
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -477,7 +477,7 @@ class PrintJobSimulator private constructor(private val context: Context) {
     }
     
     private fun broadcastErrorEvent(errorEvent: ErrorEvent) {
-        val intent = android.content.Intent("com.example.printer.ERROR_SIMULATED")
+        val intent = android.content.Intent("com.google.virtualprinter.ERROR_SIMULATED")
         intent.putExtra("error_id", errorEvent.id)
         intent.putExtra("error_code", errorEvent.error.code)
         intent.putExtra("error_description", errorEvent.error.description)
@@ -492,7 +492,7 @@ class PrintJobSimulator private constructor(private val context: Context) {
     }
     
     private fun broadcastErrorResolution(errorEvent: ErrorEvent) {
-        val intent = android.content.Intent("com.example.printer.ERROR_RESOLVED")
+        val intent = android.content.Intent("com.google.virtualprinter.ERROR_RESOLVED")
         intent.putExtra("error_id", errorEvent.id)
         intent.putExtra("error_code", errorEvent.error.code)
         intent.putExtra("resolution", errorEvent.resolution ?: "Unknown")

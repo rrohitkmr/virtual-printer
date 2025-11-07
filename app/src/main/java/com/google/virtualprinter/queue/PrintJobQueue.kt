@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.example.printer.queue
+package com.google.virtualprinter.queue
 
 import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import com.example.printer.utils.FileUtils
+import com.google.virtualprinter.utils.FileUtils
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
@@ -417,7 +417,7 @@ class PrintJobQueue private constructor(private val context: Context) {
     }
     
     private fun broadcastJobStateChange(job: PrintJob, reason: String) {
-        val intent = android.content.Intent("com.example.printer.JOB_STATE_CHANGED")
+        val intent = android.content.Intent("com.google.virtualprinter.JOB_STATE_CHANGED")
         intent.putExtra("job_id", job.id)
         intent.putExtra("job_state", job.state.name)
         intent.putExtra("job_state_code", job.state.code)

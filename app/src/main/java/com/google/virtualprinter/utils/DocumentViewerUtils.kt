@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.printer.utils
+package com.google.virtualprinter.utils
 
 import android.content.ActivityNotFoundException
 import android.content.Context

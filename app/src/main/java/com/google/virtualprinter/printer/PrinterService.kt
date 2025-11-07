@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.printer.printer
+package com.google.virtualprinter.printer
 
 import android.content.Context
 import android.net.nsd.NsdManager
@@ -50,16 +50,16 @@ import java.net.InetAddress
 import java.net.NetworkInterface
 import java.util.*
 import java.net.URI
-import com.example.printer.utils.PreferenceUtils
-import com.example.printer.utils.IppAttributesUtils
-import com.example.printer.logging.PrinterLogger
-import com.example.printer.logging.LogCategory
-import com.example.printer.logging.LogLevel
+import com.google.virtualprinter.utils.PreferenceUtils
+import com.google.virtualprinter.utils.IppAttributesUtils
+import com.google.virtualprinter.logging.PrinterLogger
+import com.google.virtualprinter.logging.LogCategory
+import com.google.virtualprinter.logging.LogLevel
 import java.io.FileOutputStream
-import com.example.printer.plugins.PluginFramework
-import com.example.printer.queue.PrintJob
-import com.example.printer.queue.PrintJobQueue
-import com.example.printer.queue.PrintJobState
+import com.google.virtualprinter.plugins.PluginFramework
+import com.google.virtualprinter.queue.PrintJob
+import com.google.virtualprinter.queue.PrintJobQueue
+import com.google.virtualprinter.queue.PrintJobState
 import kotlin.time.Duration.Companion.seconds
 
 class PrinterService(private val context: Context) {
@@ -432,14 +432,14 @@ class PrinterService(private val context: Context) {
                     // Execute delay simulator FIRST - before any processing or response
                     try {
                         // Create a temporary job for plugin delay processing
-                        val tempJob = com.example.printer.queue.PrintJob(
+                        val tempJob = com.google.virtualprinter.queue.PrintJob(
                             id = System.currentTimeMillis(),
                             name = "Temp Job for Delay",
                             filePath = "temp",
                             documentFormat = "application/pdf",
                             size = documentData.size.toLong(),
                             submissionTime = System.currentTimeMillis(),
-                            state = com.example.printer.queue.PrintJobState.PENDING
+                            state = com.google.virtualprinter.queue.PrintJobState.PENDING
                         )
                         // Direct suspend call with timeout (already in Ktor coroutine context)
                         kotlinx.coroutines.withTimeout(30.seconds) {
@@ -515,14 +515,14 @@ class PrinterService(private val context: Context) {
                         Log.d(TAG, "Processing Print-Job with ID: $jobId, document size: ${documentData.size} bytes, format: $documentFormat")
                         
                         // Register job in queue for plugin hooks
-                        val job = com.example.printer.queue.PrintJob(
+                        val job = com.google.virtualprinter.queue.PrintJob(
                             id = jobId,
                             name = request.attributeGroups.find { it.tag == Tag.operationAttributes }?.getValues(Types.jobName)?.firstOrNull()?.toString() ?: "Print Job",
                             filePath = File(printJobsDirectory, "print_job_${jobId}.tmp").absolutePath,
                             documentFormat = documentFormat,
                             size = documentData.size.toLong(),
                             submissionTime = System.currentTimeMillis(),
-                            state = com.example.printer.queue.PrintJobState.PENDING,
+                            state = com.google.virtualprinter.queue.PrintJobState.PENDING,
                             stateReasons = listOf("none"),
                             jobOriginatingUserName = request.attributeGroups.find { it.tag == Tag.operationAttributes }?.getValues(Types.requestingUserName)?.firstOrNull()?.toString() ?: "anonymous",
                             impressionsCompleted = 0,
@@ -594,14 +594,14 @@ class PrinterService(private val context: Context) {
                 try {
                     // Execute delay simulator FIRST - before any processing or response
                     try {
-                        val tempJob = com.example.printer.queue.PrintJob(
+                        val tempJob = com.google.virtualprinter.queue.PrintJob(
                             id = System.currentTimeMillis(),
                             name = "Temp Job for Send-Document Delay",
                             filePath = "temp",
                             documentFormat = "application/pdf",
                             size = documentData.size.toLong(),
                             submissionTime = System.currentTimeMillis(),
-                            state = com.example.printer.queue.PrintJobState.PENDING
+                            state = com.google.virtualprinter.queue.PrintJobState.PENDING
                         )
                         // Direct suspend call with timeout (already in Ktor coroutine context)
                         kotlinx.coroutines.withTimeout(30.seconds) {
@@ -659,14 +659,14 @@ class PrinterService(private val context: Context) {
                         
                         // Use the job ID from the request or generate a new one
                         val actualJobId = if (jobId != null && jobId > 0) jobId.toLong() else System.currentTimeMillis()
-                        val job = com.example.printer.queue.PrintJob(
+                        val job = com.google.virtualprinter.queue.PrintJob(
                             id = actualJobId,
                             name = request.attributeGroups.find { it.tag == Tag.operationAttributes }?.getValues(Types.jobName)?.firstOrNull()?.toString() ?: "Send Document",
                             filePath = File(printJobsDirectory, "print_job_${actualJobId}.tmp").absolutePath,
                             documentFormat = documentFormat,
                             size = documentData.size.toLong(),
                             submissionTime = System.currentTimeMillis(),
-                            state = com.example.printer.queue.PrintJobState.PENDING,
+                            state = com.google.virtualprinter.queue.PrintJobState.PENDING,
                             stateReasons = listOf("none"),
                             jobOriginatingUserName = request.attributeGroups.find { it.tag == Tag.operationAttributes }?.getValues(Types.requestingUserName)?.firstOrNull()?.toString() ?: "anonymous",
                             impressionsCompleted = 0,
@@ -1020,7 +1020,7 @@ class PrinterService(private val context: Context) {
                 if (file.exists() && file.length() > 0) {
                     Log.d(TAG, "Successfully saved PDF document: ${file.absolutePath} (${file.length()} bytes)")
                     // Notify that a new job was received
-                    val intent = android.content.Intent("com.example.printer.NEW_PRINT_JOB")
+                    val intent = android.content.Intent("com.google.virtualprinter.NEW_PRINT_JOB")
                     intent.putExtra("job_path", file.absolutePath)
                     intent.putExtra("job_size", pdfBytes.size)
                     intent.putExtra("job_id", jobId)
@@ -1059,7 +1059,7 @@ class PrinterService(private val context: Context) {
                 
                 if (pdfFile.exists() && pdfFile.length() > 0) {
                     // Notify about the PDF file instead of raw
-                    val intent = android.content.Intent("com.example.printer.NEW_PRINT_JOB")
+                    val intent = android.content.Intent("com.google.virtualprinter.NEW_PRINT_JOB")
                     intent.putExtra("job_path", pdfFile.absolutePath)
                     intent.putExtra("job_size", pdfWrapper.size)
                     intent.putExtra("job_id", jobId)
@@ -1076,7 +1076,7 @@ class PrinterService(private val context: Context) {
             
             // If PDF conversion fails, notify about the raw file
             if (rawFile.exists() && rawFile.length() > 0) {
-                val intent = android.content.Intent("com.example.printer.NEW_PRINT_JOB")
+                val intent = android.content.Intent("com.google.virtualprinter.NEW_PRINT_JOB")
                 intent.putExtra("job_path", rawFile.absolutePath)
                 intent.putExtra("job_size", docBytes.size)
                 intent.putExtra("job_id", jobId)
@@ -1374,10 +1374,10 @@ class PrinterService(private val context: Context) {
             Log.d(TAG, "Original content first 16 bytes: $originalFirstBytes")
             
             // Try decompression and detect format
-            val (documentType, actualBytes) = com.example.printer.utils.DocumentTypeUtils.detectDocumentTypeWithDecompression(content)
+            val (documentType, actualBytes) = com.google.virtualprinter.utils.DocumentTypeUtils.detectDocumentTypeWithDecompression(content)
             
             // Generate filename with correct extension
-            val filename = com.example.printer.utils.DocumentTypeUtils.generateFilename(jobId, documentType)
+            val filename = com.google.virtualprinter.utils.DocumentTypeUtils.generateFilename(jobId, documentType)
             val file = File(printJobsDirectory, filename)
             
             Log.d(TAG, "Saving ${documentType.name} document (${actualBytes.size} bytes) to: ${file.absolutePath}")
@@ -1387,7 +1387,7 @@ class PrinterService(private val context: Context) {
             
             if (file.exists() && file.length() > 0) {
                 // Notify that a new job was received
-                val intent = android.content.Intent("com.example.printer.NEW_PRINT_JOB")
+                val intent = android.content.Intent("com.google.virtualprinter.NEW_PRINT_JOB")
                 intent.putExtra("job_path", file.absolutePath)
                 intent.putExtra("job_size", actualBytes.size)
                 intent.putExtra("job_id", jobId)

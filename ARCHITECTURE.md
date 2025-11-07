@@ -22,7 +22,7 @@ Android Virtual Printer is a production-ready application designed for Chromium 
 
 ```
 app/
-├── src/main/java/com/example/printer/
+├── src/main/java/com/google/virtualprinter/
 │   ├── core/                      # Core utilities and base classes
 │   │   ├── di/                    # Dependency injection
 │   │   ├── network/               # Network configuration

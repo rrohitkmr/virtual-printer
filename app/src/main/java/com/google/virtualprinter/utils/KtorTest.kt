@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.printer.utils
+package com.google.virtualprinter.utils
 
 import io.ktor.server.application.*
 import io.ktor.server.engine.*

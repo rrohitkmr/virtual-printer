@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.printer.logging
+package com.google.virtualprinter.logging
 
 import android.content.Context
 import android.util.Log

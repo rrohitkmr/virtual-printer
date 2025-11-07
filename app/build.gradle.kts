@@ -20,11 +20,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.printer"
+    namespace = "com.google.virtualprinter"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.printer"
+        applicationId = "com.google.virtualprinter"
         minSdk = 29
         targetSdk = 35
         versionCode = 1

@@ -18,7 +18,7 @@
         errorLine1="            android.content.Context.RECEIVER_NOT_EXPORTED"
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/example/printer/MainActivity.kt"
+            file="src/main/java/com/google/virtualprinter/MainActivity.kt"
             line="70"
             column="13"/>
     </issue>
@@ -29,7 +29,7 @@
         errorLine1="            if (intent.resolveActivity(context.packageManager) != null) {"
         errorLine2="                       ~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/example/printer/utils/FileUtils.kt"
+            file="src/main/java/com/google/virtualprinter/utils/FileUtils.kt"
             line="112"
             column="24"/>
     </issue>
@@ -509,33 +509,33 @@
 
     <issue
         id="UnsafeImplicitIntentLaunch"
-        message="The intent action `com.example.printer.NEW_PRINT_JOB (used to send a broadcast)` matches the intent filter of a non-exported receiver, registered via a call to `Context.registerReceiver`, or similar. If you are trying to invoke this specific receiver via the action then you should use `Intent.setPackage(&lt;APPLICATION_ID>)`."
-        errorLine1="                    val intent = android.content.Intent(&quot;com.example.printer.NEW_PRINT_JOB&quot;)"
+        message="The intent action `com.google.virtualprinter.NEW_PRINT_JOB (used to send a broadcast)` matches the intent filter of a non-exported receiver, registered via a call to `Context.registerReceiver`, or similar. If you are trying to invoke this specific receiver via the action then you should use `Intent.setPackage(&lt;APPLICATION_ID>)`."
+        errorLine1="                    val intent = android.content.Intent(&quot;com.google.virtualprinter.NEW_PRINT_JOB&quot;)"
         errorLine2="                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/example/printer/printer/PrinterService.kt"
+            file="src/main/java/com/google/virtualprinter/printer/PrinterService.kt"
             line="649"
             column="34"/>
     </issue>
 
     <issue
         id="UnsafeImplicitIntentLaunch"
-        message="The intent action `com.example.printer.NEW_PRINT_JOB (used to send a broadcast)` matches the intent filter of a non-exported receiver, registered via a call to `Context.registerReceiver`, or similar. If you are trying to invoke this specific receiver via the action then you should use `Intent.setPackage(&lt;APPLICATION_ID>)`."
-        errorLine1="                    val intent = android.content.Intent(&quot;com.example.printer.NEW_PRINT_JOB&quot;)"
+        message="The intent action `com.google.virtualprinter.NEW_PRINT_JOB (used to send a broadcast)` matches the intent filter of a non-exported receiver, registered via a call to `Context.registerReceiver`, or similar. If you are trying to invoke this specific receiver via the action then you should use `Intent.setPackage(&lt;APPLICATION_ID>)`."
+        errorLine1="                    val intent = android.content.Intent(&quot;com.google.virtualprinter.NEW_PRINT_JOB&quot;)"
         errorLine2="                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/example/printer/printer/PrinterService.kt"
+            file="src/main/java/com/google/virtualprinter/printer/PrinterService.kt"
             line="686"
             column="34"/>
     </issue>
 
     <issue
         id="UnsafeImplicitIntentLaunch"
-        message="The intent action `com.example.printer.NEW_PRINT_JOB (used to send a broadcast)` matches the intent filter of a non-exported receiver, registered via a call to `Context.registerReceiver`, or similar. If you are trying to invoke this specific receiver via the action then you should use `Intent.setPackage(&lt;APPLICATION_ID>)`."
-        errorLine1="                val intent = android.content.Intent(&quot;com.example.printer.NEW_PRINT_JOB&quot;)"
+        message="The intent action `com.google.virtualprinter.NEW_PRINT_JOB (used to send a broadcast)` matches the intent filter of a non-exported receiver, registered via a call to `Context.registerReceiver`, or similar. If you are trying to invoke this specific receiver via the action then you should use `Intent.setPackage(&lt;APPLICATION_ID>)`."
+        errorLine1="                val intent = android.content.Intent(&quot;com.google.virtualprinter.NEW_PRINT_JOB&quot;)"
         errorLine2="                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/example/printer/printer/PrinterService.kt"
+            file="src/main/java/com/google/virtualprinter/printer/PrinterService.kt"
             line="703"
             column="30"/>
     </issue>
@@ -557,7 +557,7 @@
         errorLine1="            val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {"
         errorLine2="                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/example/printer/utils/FileUtils.kt"
+            file="src/main/java/com/google/virtualprinter/utils/FileUtils.kt"
             line="81"
             column="27"/>
     </issue>
@@ -568,7 +568,7 @@
         errorLine1="    var refreshTrigger by remember { mutableStateOf(0) }"
         errorLine2="                                     ~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/example/printer/MainActivity.kt"
+            file="src/main/java/com/google/virtualprinter/MainActivity.kt"
             line="175"
             column="38"/>
     </issue>
@@ -579,7 +579,7 @@
         errorLine1="    MainActivity.refreshTriggerState = remember { mutableStateOf(0) }"
         errorLine2="                                                  ~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/example/printer/MainActivity.kt"
+            file="src/main/java/com/google/virtualprinter/MainActivity.kt"
             line="179"
             column="51"/>
     </issue>
@@ -590,7 +590,7 @@
         errorLine1="    var printJobs by remember { mutableStateOf(FileUtils.getSavedPrintJobs(context).size) }"
         errorLine2="                                ~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/example/printer/settings/SettingsScreen.kt"
+            file="src/main/java/com/google/virtualprinter/settings/SettingsScreen.kt"
             line="44"
             column="33"/>
     </issue>

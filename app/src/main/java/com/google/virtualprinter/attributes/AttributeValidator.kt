@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.printer.attributes
+package com.google.virtualprinter.attributes
 
 import android.util.Log
 import com.hp.jipp.encoding.Attribute

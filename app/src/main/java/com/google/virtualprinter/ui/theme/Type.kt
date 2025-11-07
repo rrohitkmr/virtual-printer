@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.printer.ui.theme
+package com.google.virtualprinter.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

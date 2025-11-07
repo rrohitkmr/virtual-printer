@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.printer
+package com.google.virtualprinter
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -34,13 +34,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
-import com.example.printer.printer.PrinterService
-import com.example.printer.settings.SettingsScreen
-import com.example.printer.ui.theme.PrinterTheme
-import com.example.printer.utils.FileUtils
-import com.example.printer.utils.DocumentConverter
-import com.example.printer.utils.DocumentDiagnostics
-import com.example.printer.utils.PreferenceUtils
+import com.google.virtualprinter.printer.PrinterService
+import com.google.virtualprinter.settings.SettingsScreen
+import com.google.virtualprinter.ui.theme.PrinterTheme
+import com.google.virtualprinter.utils.FileUtils
+import com.google.virtualprinter.utils.DocumentConverter
+import com.google.virtualprinter.utils.DocumentDiagnostics
+import com.google.virtualprinter.utils.PreferenceUtils
 import android.util.Log
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
     private val printJobReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context, intent: android.content.Intent) {
             android.util.Log.d("MainActivity", "Received broadcast: ${intent.action}")
-            if (intent.action == "com.example.printer.NEW_PRINT_JOB") {
+            if (intent.action == "com.google.virtualprinter.NEW_PRINT_JOB") {
                 val jobPath = intent.getStringExtra("job_path") ?: "unknown"
                 val jobSize = intent.getIntExtra("job_size", 0)
                 android.util.Log.d("MainActivity", "Print job received: $jobPath, size: $jobSize bytes")
@@ -82,7 +82,7 @@ class MainActivity : ComponentActivity() {
         )
         
         // Register the broadcast receiver with API level check
-        val intentFilter = android.content.IntentFilter("com.example.printer.NEW_PRINT_JOB")
+        val intentFilter = android.content.IntentFilter("com.google.virtualprinter.NEW_PRINT_JOB")
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(printJobReceiver, intentFilter, android.content.Context.RECEIVER_NOT_EXPORTED)
         } else {
@@ -213,13 +213,13 @@ fun MainNavigation(printerService: PrinterService, viewModel: PrinterViewModel) 
                     printerService = printerService,
                     onBackClick = { currentScreen = "main" }
                 )
-                "jobs" -> com.example.printer.ui.JobManagementScreen(
+                "jobs" -> com.google.virtualprinter.ui.JobManagementScreen(
                     onBackClick = { currentScreen = "main" }
                 )
-                "logs" -> com.example.printer.ui.LogsScreen(
+                "logs" -> com.google.virtualprinter.ui.LogsScreen(
                     onBackClick = { currentScreen = "main" }
                 )
-                "plugins" -> com.example.printer.ui.PluginManagementScreen(
+                "plugins" -> com.google.virtualprinter.ui.PluginManagementScreen(
                     onBackClick = { currentScreen = "main" },
                     printerService = printerService
                 )

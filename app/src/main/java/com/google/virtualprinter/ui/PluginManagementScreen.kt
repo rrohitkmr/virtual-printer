@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.printer.ui
+package com.google.virtualprinter.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -37,20 +37,20 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.printer.plugins.PluginFramework
-import com.example.printer.plugins.PluginMetadata
-import com.example.printer.plugins.ConfigurationField as PluginConfigField
-import com.example.printer.plugins.FieldType
-import com.example.printer.logging.LogCategory
-import com.example.printer.logging.PrinterLogger
-import com.example.printer.ui.ConfigurationField
+import com.google.virtualprinter.plugins.PluginFramework
+import com.google.virtualprinter.plugins.PluginMetadata
+import com.google.virtualprinter.plugins.ConfigurationField as PluginConfigField
+import com.google.virtualprinter.plugins.FieldType
+import com.google.virtualprinter.logging.LogCategory
+import com.google.virtualprinter.logging.PrinterLogger
+import com.google.virtualprinter.ui.ConfigurationField
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PluginManagementScreen(
     onBackClick: () -> Unit,
-    printerService: com.example.printer.printer.PrinterService? = null
+    printerService: com.google.virtualprinter.printer.PrinterService? = null
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -734,7 +734,7 @@ fun PluginConfigurationDialog(
 @Composable
 fun LoadedPluginCard(
     plugin: PluginMetadata,
-    printerService: com.example.printer.printer.PrinterService,
+    printerService: com.google.virtualprinter.printer.PrinterService,
     pluginFramework: PluginFramework,
     onUnload: (String) -> Unit,
     onConfigure: (String) -> Unit

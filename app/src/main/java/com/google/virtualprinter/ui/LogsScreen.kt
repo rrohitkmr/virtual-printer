@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.printer.ui
+package com.google.virtualprinter.ui
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -41,7 +41,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.printer.logging.*
+import com.google.virtualprinter.logging.*
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*

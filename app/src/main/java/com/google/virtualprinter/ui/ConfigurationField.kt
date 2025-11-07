@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.printer.ui
+package com.google.virtualprinter.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -29,8 +29,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.printer.plugins.ConfigurationField as PluginConfigField
-import com.example.printer.plugins.FieldType
+import com.google.virtualprinter.plugins.ConfigurationField as PluginConfigField
+import com.google.virtualprinter.plugins.FieldType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

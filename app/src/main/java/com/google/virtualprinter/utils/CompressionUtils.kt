@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.printer.utils
+package com.google.virtualprinter.utils
 
 import android.util.Log
 import java.io.ByteArrayInputStream

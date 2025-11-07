@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.printer
+package com.google.virtualprinter
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

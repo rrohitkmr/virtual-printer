@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.printer.ui
+package com.google.virtualprinter.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -35,13 +35,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.printer.queue.PrintJob
-import com.example.printer.queue.PrintJobQueue
-import com.example.printer.queue.PrintJobState
-import com.example.printer.simulator.PrintJobSimulator
-import com.example.printer.logging.PrinterLogger
-import com.example.printer.logging.LogCategory
-import com.example.printer.logging.LogLevel
+import com.google.virtualprinter.queue.PrintJob
+import com.google.virtualprinter.queue.PrintJobQueue
+import com.google.virtualprinter.queue.PrintJobState
+import com.google.virtualprinter.simulator.PrintJobSimulator
+import com.google.virtualprinter.logging.PrinterLogger
+import com.google.virtualprinter.logging.LogCategory
+import com.google.virtualprinter.logging.LogLevel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -322,7 +322,7 @@ fun StatItem(label: String, value: String) {
 
 @Composable
 fun ActiveErrorsCard(
-    activeErrors: Map<String, com.example.printer.simulator.SimulatedError>,
+    activeErrors: Map<String, com.google.virtualprinter.simulator.SimulatedError>,
     onResolveError: (String) -> Unit
 ) {
     Card(

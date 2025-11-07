@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.printer;
+package com.google.virtualprinter;
 
 import android.content.Context;
 
@@ -37,6 +37,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.example.printer", appContext.getPackageName());
+        assertEquals("com.google.virtualprinter", appContext.getPackageName());
     }
 }
