@@ -15,15 +15,18 @@
  */
 
 package com.google.virtualprinter
-
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -33,7 +36,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.lifecycleScope
 import com.google.virtualprinter.printer.PrinterService
 import com.google.virtualprinter.settings.SettingsScreen
 import com.google.virtualprinter.ui.theme.PrinterTheme
@@ -42,14 +44,17 @@ import com.google.virtualprinter.utils.DocumentConverter
 import com.google.virtualprinter.utils.DocumentDiagnostics
 import com.google.virtualprinter.utils.PreferenceUtils
 import android.util.Log
+import androidx.compose.ui.res.stringResource
+import com.google.virtualprinter.printer.PrinterForegroundService
+import com.google.virtualprinter.utils.NotificationPermissionHandler
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.io.File
 
 class MainActivity : ComponentActivity() {
-    private lateinit var printerService: PrinterService
     private val viewModel: PrinterViewModel by viewModels()
-    
+
+    private var boundService: PrinterForegroundService? = null
+    private var isBound = false
     private val printJobReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context, intent: android.content.Intent) {
             android.util.Log.d("MainActivity", "Received broadcast: ${intent.action}")
@@ -64,23 +69,25 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    val connection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as? PrinterForegroundService.LocalBinder
+            if (binder != null) {
+                boundService = binder.getService()
+            } else {
+                boundService = PrinterForegroundService.getInstance()
+            }
+            isBound = boundService != null
+        }
 
+        override fun onServiceDisconnected(name: ComponentName?) {
+            boundService = null
+            isBound = false
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Initialize the printer service
-        printerService = PrinterService(this)
-        
-        // Start the printer service (tied to Activity lifecycle, not composable)
-        printerService.startPrinterService(
-            onSuccess = {
-                Log.d("MainActivity", "Printer service started successfully")
-            },
-            onError = { error ->
-                Log.e("MainActivity", "Failed to start printer service: $error")
-            }
-        )
-        
+
         // Register the broadcast receiver with API level check
         val intentFilter = android.content.IntentFilter("com.google.virtualprinter.NEW_PRINT_JOB")
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
@@ -94,11 +101,42 @@ class MainActivity : ComponentActivity() {
         
         setContent {
             PrinterTheme {
+                var permissionGranted by remember { mutableStateOf(false) }
+                val context = this
+
+                NotificationPermissionHandler(
+                    onPermissionGranted = {
+                        permissionGranted = true
+                        // Start service only when permission granted
+                        startAndBindPrinterService(context)
+                    }
+                )
+
+                if (!permissionGranted) {
+                    MainNavigation(
+                        printerService = PrinterService(this),
+                        viewModel = viewModel
+                    )
+                    return@PrinterTheme
+                }
+
+                var fgService by remember { mutableStateOf<PrinterForegroundService?>(null) }
+
+                LaunchedEffect(Unit) {
+                    while (fgService == null) {
+                        fgService = boundService ?: PrinterForegroundService.getInstance()
+                    }
+                }
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainNavigation(printerService, viewModel)
+                    MainNavigation(
+                        printerService = fgService?.getPrinterServiceInstance()
+                            ?: PrinterService(this),
+                        viewModel = viewModel
+                    )
                 }
             }
         }
@@ -106,11 +144,23 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        printerService.stopPrinterService()
+        if (isBound) {
+            try {
+                unbindService(connection)
+            } catch (e: Exception) {
+                Log.w("MainActivity", "Unbind error", e)
+            }
+        }
         try {
             unregisterReceiver(printJobReceiver)
         } catch (e: Exception) {
             // Receiver might not be registered
+        }
+    }
+
+    private fun startAndBindPrinterService(context: Context) {
+        Intent(context, PrinterForegroundService::class.java).also { intent ->
+            bindService(intent, connection, Context.BIND_AUTO_CREATE)
         }
     }
 
@@ -167,7 +217,8 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainNavigation(printerService: PrinterService, viewModel: PrinterViewModel) {
+fun MainNavigation(printerService: PrinterService,viewModel: PrinterViewModel) {
+    val context = LocalContext.current
     var currentScreen by remember { mutableStateOf("main") }
     
     Scaffold(
@@ -208,7 +259,7 @@ fun MainNavigation(printerService: PrinterService, viewModel: PrinterViewModel) 
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             when (currentScreen) {
-                "main" -> PrinterApp(printerService = printerService, viewModel = viewModel)
+                "main" -> PrinterApp(printerService = printerService,viewModel = viewModel)
                 "settings" -> SettingsScreen(
                     printerService = printerService,
                     onBackClick = { currentScreen = "main" }
@@ -230,13 +281,10 @@ fun MainNavigation(printerService: PrinterService, viewModel: PrinterViewModel) 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PrinterApp(
-    printerService: PrinterService,
-    viewModel: PrinterViewModel
-) {
+fun PrinterApp(printerService: PrinterService,viewModel: PrinterViewModel) {
     val context = LocalContext.current
     var isServiceRunning by remember { mutableStateOf(false) }
-    var statusMessage by remember { mutableStateOf("Printer service not running") }
+    var statusMessage by remember { mutableStateOf(context.getString(R.string.checking_printer_status)) }
     var savedFiles by remember { mutableStateOf<List<File>>(emptyList()) }
     var showDeleteAllDialog by remember { mutableStateOf(false) }
     
@@ -259,28 +307,40 @@ fun PrinterApp(
     // Update UI based on actual service status (service lifecycle managed by MainActivity)
     LaunchedEffect(Unit) {
         while (true) {
-            val status = printerService.getServiceStatus()
-            isServiceRunning = status == PrinterService.ServiceStatus.RUNNING || 
-                               status == PrinterService.ServiceStatus.ERROR_SIMULATION
+            val runningService = PrinterForegroundService.getInstance()
+            val status = runningService?.getServiceStatus() ?: PrinterService.ServiceStatus.STOPPED
+
+            isServiceRunning = status == PrinterService.ServiceStatus.RUNNING ||
+                    status == PrinterService.ServiceStatus.ERROR_SIMULATION
+
             statusMessage = when (status) {
-                PrinterService.ServiceStatus.RUNNING -> 
-                    "Printer service running\nPrinter name: ${printerService.getPrinterName()}"
-                PrinterService.ServiceStatus.STARTING -> 
-                    "Starting printer service..."
-                PrinterService.ServiceStatus.ERROR_SIMULATION -> 
-                    "Printer service running (Error Mode)\nPrinter name: ${printerService.getPrinterName()}"
-                PrinterService.ServiceStatus.STOPPED -> 
-                    "Printer service not running"
+                PrinterService.ServiceStatus.RUNNING ->
+                    context.getString(
+                        R.string.printer_service_running_printer_name,
+                        runningService?.printerService?.getPrinterName()
+                    )
+
+                PrinterService.ServiceStatus.STARTING ->
+                    context.getString(R.string.starting_printer_service)
+
+                PrinterService.ServiceStatus.ERROR_SIMULATION ->
+                    context.getString(
+                        R.string.printer_service_running_error_mode_printer_name,
+                        runningService?.printerService?.getPrinterName()
+                    )
+
+                PrinterService.ServiceStatus.STOPPED ->
+                    context.getString(R.string.printer_service_not_running)
             }
             delay(500) // Poll status every 0.5 seconds
         }
     }
-    
+
     if (showDeleteAllDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteAllDialog = false },
-            title = { Text("Delete All Print Jobs") },
-            text = { Text("Are you sure you want to delete all print jobs? This action cannot be undone.") },
+            title = { Text(stringResource(R.string.delete_all_print_jobs)) },
+            text = { Text(stringResource(R.string.delete_all_jobs_description)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -289,14 +349,14 @@ fun PrinterApp(
                         showDeleteAllDialog = false
                     }
                 ) {
-                    Text("Delete All")
+                    Text(context.getString(R.string.delete_all))
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = { showDeleteAllDialog = false }
                 ) {
-                    Text("Cancel")
+                    Text(context.getString(R.string.cancel))
                 }
             }
         )
@@ -344,7 +404,7 @@ fun PrinterApp(
                             modifier = Modifier.padding(end = 8.dp)
                         )
                         Text(
-                            text = "Printer Status",
+                            text = context.getString(R.string.printer_status),
                             style = MaterialTheme.typography.titleMedium
                         )
                     }
@@ -356,15 +416,48 @@ fun PrinterApp(
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center
                     )
-                    
+
+                    Spacer(modifier = Modifier.height(8.dp))
                     if (isServiceRunning) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Waiting for print jobs...",
+                            text = stringResource(R.string.waiting_for_print_jobs),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.outline
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+
+
+                    Button(
+                        onClick = {
+                            if (isServiceRunning) {
+                                PrinterForegroundService.stopService(context)
+                                isServiceRunning = false
+                                statusMessage = context.getString(R.string.printer_service_not_running)
+                            } else {
+                                PrinterForegroundService.startService(context)
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isServiceRunning)
+                                MaterialTheme.colorScheme.error
+                            else
+                                MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Icon(
+                            imageVector = if (isServiceRunning) Icons.Default.Close else Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text(if (isServiceRunning) stringResource(R.string.stop_service) else stringResource(
+                            R.string.start_service
+                        ))
+                    }
+
                 }
             }
             
@@ -377,8 +470,8 @@ fun PrinterApp(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                    verticalAlignment = Alignment.CenterVertically)
+                {
                     Icon(
                         imageVector = Icons.Default.Info,
                         contentDescription = null,
@@ -386,7 +479,7 @@ fun PrinterApp(
                         modifier = Modifier.padding(end = 8.dp)
                     )
                     Text(
-                        text = "Received Print Jobs",
+                        text = stringResource(R.string.received_print_jobs),
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
@@ -397,7 +490,7 @@ fun PrinterApp(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete All"
+                            contentDescription = context.getString(R.string.delete_all)
                         )
                     }
                 }
@@ -426,7 +519,7 @@ fun PrinterApp(
                                     .padding(bottom = 16.dp)
                             )
                             Text(
-                                text = "No print jobs received yet.\nFiles will appear here when someone prints to this printer.",
+                                text = stringResource(R.string.not_print_job_received_yet),
                                 textAlign = TextAlign.Center,
                                 style = MaterialTheme.typography.bodyMedium
                             )
@@ -560,10 +653,10 @@ fun PrintJobItem(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete",
+                        contentDescription = stringResource(R.string.delete),
                         modifier = Modifier.padding(end = 8.dp)
                     )
-                    Text("Delete")
+                    Text(context.getString(R.string.delete))
                 }
             }
         }

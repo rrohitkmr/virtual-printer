@@ -24,4 +24,18 @@
     <string name="delete_all">Delete All</string>
     <string name="cancel">Cancel</string>
     <string name="view">View</string>
+    <string name="printer_error">Printer Error</string>
+    <string name="starting_printer_service">Starting printer service…</string>
+    <string name="checking_printer_status">Checking printer status…</string>
+    <string name="printer_service_running_printer_name">Printer service running\nPrinter name: %1$s</string>
+    <string name="printer_service_running_error_mode_printer_name">Printer service running (Error Mode)\nPrinter name: %1$s</string>
+    <string name="printer_service_not_running">Printer service not running</string>
+    <string name="waiting_for_print_jobs">Waiting for print jobs...</string>
+    <string name="stop_service">Stop Service</string>
+    <string name="start_service">Start Service</string>
+    <string name="received_print_jobs">Received Print Jobs</string>
+    <string name="not_print_job_received_yet">No print jobs received yet.\nFiles will appear here when someone prints to this printer.</string>
+    <string name="delete">Delete</string>
+    <string name="delete_all_print_jobs">Delete All Print Jobs</string>
+    <string name="delete_all_jobs_description">Are you sure you want to delete all print jobs? This action cannot be undone.</string>
 </resources>
