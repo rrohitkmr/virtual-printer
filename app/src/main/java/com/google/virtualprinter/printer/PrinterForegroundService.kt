@@ -31,6 +31,7 @@ import androidx.core.app.NotificationCompat
 import com.google.virtualprinter.MainActivity
 import com.google.virtualprinter.R
 
+
 class PrinterForegroundService : Service() {
     private val TAG = "PrinterForegroundService"
     private val CHANNEL_ID = "PrinterServiceChannel"
@@ -91,20 +92,20 @@ class PrinterForegroundService : Service() {
         }
 
         isServiceStarted = true
-        updateNotification("Virtual Printer", "Starting printer service...")
+        updateNotification(getString(R.string.app_name), getString(R.string.starting_printer_service))
 
         try {
             // Start the printer service
             printerService.startPrinterService(
                 onSuccess = {
-                    updateNotification("Printer Active", "Ready to receive print jobs")
+                    updateNotification(getString(R.string.printer_active), getString(R.string.ready_to_receive))
                 },
                 onError = { error ->
-                    updateNotification("Printer Error", error)
+                    updateNotification(getString(R.string.printer_error), error)
                 }
             )
         } catch (e: Exception) {
-            updateNotification("Printer Error", e.message ?: "Unknown error")
+            updateNotification(getString(R.string.printer_error), e.message ?: getString(R.string.unknown_error))
         }
     }
     override fun onBind(intent: Intent?): IBinder {
@@ -136,7 +137,7 @@ class PrinterForegroundService : Service() {
         } catch (e: Exception) {
         }
         isServiceStarted = false
-        updateNotification("Virtual Printer", "Stopped")
+        updateNotification(getString(R.string.printer_error), getString(R.string.stopped))
     }
 
     private fun cleanupResources() {
@@ -183,6 +184,15 @@ class PrinterForegroundService : Service() {
         title: String = getString(R.string.app_name),
         content: String = getString(R.string.starting_printer_service)
     ): Notification {
+
+        val printerName = printerService.getPrinterName()
+        val printerStatus = when (printerService.getServiceStatus()) {
+            PrinterService.ServiceStatus.RUNNING -> getString(R.string.status_running)
+            PrinterService.ServiceStatus.ERROR_SIMULATION -> getString(R.string.status_error_mode)
+            PrinterService.ServiceStatus.STARTING -> getString(R.string.status_starting)
+            PrinterService.ServiceStatus.STOPPED -> getString(R.string.status_stopped)
+            else -> getString(R.string.status_unknown)
+        }
         // Intent to open the app when notification is tapped
         val notificationIntent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -206,13 +216,13 @@ class PrinterForegroundService : Service() {
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(title)
-            .setContentText(content)
+            .setContentTitle(printerName)
+            .setContentText(printerStatus)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentIntent(pendingIntent)
             .addAction(
                 android.R.drawable.ic_delete,
-                "Stop",
+                getString(R.string.stop),
                 stopPendingIntent)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
@@ -241,7 +251,7 @@ class PrinterForegroundService : Service() {
 
         fun getInstance(): PrinterForegroundService? = instance
 
-        const val ACTION_STOP_SERVICE = "com.example.printer.STOP_SERVICE"
+        const val ACTION_STOP_SERVICE = "com.google.virtualprinter.STOP_SERVICE"
 
         fun startService(context: Context) {
             val intent = Intent(context, PrinterForegroundService::class.java)
@@ -257,7 +267,12 @@ class PrinterForegroundService : Service() {
             val intent = Intent(context, PrinterForegroundService::class.java).apply {
                 action = ACTION_STOP_SERVICE
             }
-            context.startForegroundService(intent)
+            try {
+                context.startForegroundService(intent)
+                Log.d("PrinterForegroundService", "Service start requested")
+            } catch (e: Exception) {
+                Log.e("PrinterForegroundService", "Error starting service", e)
+            }
         }
     }
 }

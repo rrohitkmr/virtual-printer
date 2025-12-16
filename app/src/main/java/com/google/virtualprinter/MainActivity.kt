@@ -19,6 +19,8 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import androidx.activity.ComponentActivity
@@ -44,15 +46,22 @@ import com.google.virtualprinter.utils.DocumentConverter
 import com.google.virtualprinter.utils.DocumentDiagnostics
 import com.google.virtualprinter.utils.PreferenceUtils
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.res.stringResource
+import androidx.core.content.ContextCompat
 import com.google.virtualprinter.printer.PrinterForegroundService
-import com.google.virtualprinter.utils.NotificationPermissionHandler
+import com.google.virtualprinter.ui.permission.NotificationPermissionHandler
 import kotlinx.coroutines.delay
 import java.io.File
 
 class MainActivity : ComponentActivity() {
     private val viewModel: PrinterViewModel by viewModels()
-
+    enum class PermissionUiState {
+        CHECKING,
+        GRANTED,
+        REQUIRED
+    }
     private var boundService: PrinterForegroundService? = null
     private var isBound = false
     private val printJobReceiver = object : android.content.BroadcastReceiver() {
@@ -91,7 +100,11 @@ class MainActivity : ComponentActivity() {
         // Register the broadcast receiver with API level check
         val intentFilter = android.content.IntentFilter("com.google.virtualprinter.NEW_PRINT_JOB")
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(printJobReceiver, intentFilter, android.content.Context.RECEIVER_NOT_EXPORTED)
+            registerReceiver(
+                printJobReceiver,
+                intentFilter,
+                android.content.Context.RECEIVER_NOT_EXPORTED
+            )
         } else {
             registerReceiver(printJobReceiver, intentFilter)
         }
@@ -101,42 +114,68 @@ class MainActivity : ComponentActivity() {
         
         setContent {
             PrinterTheme {
-                var permissionGranted by remember { mutableStateOf(false) }
                 val context = this
 
-                NotificationPermissionHandler(
-                    onPermissionGranted = {
-                        permissionGranted = true
-                        // Start service only when permission granted
-                        startAndBindPrinterService(context)
-                    }
-                )
-
-                if (!permissionGranted) {
-                    MainNavigation(
-                        printerService = PrinterService(this),
-                        viewModel = viewModel
-                    )
-                    return@PrinterTheme
+                // Permission launcher for requesting permission
+                var permissionState by remember {
+                    mutableStateOf(PermissionUiState.CHECKING)
                 }
 
-                var fgService by remember { mutableStateOf<PrinterForegroundService?>(null) }
+                val permissionLauncher =
+                    rememberLauncherForActivityResult(
+                        ActivityResultContracts.RequestPermission()
+                    ) { granted ->
+                        permissionState = if (granted) {
+                            startAndBindPrinterService(context)
+                            PermissionUiState.GRANTED
+                        } else {
+                            PermissionUiState.REQUIRED
+                        }
+                    }
 
                 LaunchedEffect(Unit) {
-                    while (fgService == null) {
-                        fgService = boundService ?: PrinterForegroundService.getInstance()
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        val alreadyGranted =
+                            ContextCompat.checkSelfPermission(
+                                context,
+                                android.Manifest.permission.POST_NOTIFICATIONS
+                            ) == PackageManager.PERMISSION_GRANTED
+
+                        if (alreadyGranted) {
+                            startAndBindPrinterService(context)
+                            permissionState = PermissionUiState.GRANTED
+                        } else {
+                            permissionLauncher.launch(
+                                android.Manifest.permission.POST_NOTIFICATIONS
+                            )
+                        }
+                    } else {
+                        permissionState = PermissionUiState.GRANTED
+                        startAndBindPrinterService(context)
                     }
                 }
 
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    MainNavigation(
-                        printerService = fgService?.getPrinterServiceInstance()
-                            ?: PrinterService(this),
-                        viewModel = viewModel
-                    )
+                when (permissionState) {
+
+                    PermissionUiState.CHECKING -> {
+                    }
+
+                    PermissionUiState.GRANTED -> {
+                        MainNavigation(
+                            printerService = PrinterService(this),
+                            viewModel = viewModel
+                        )
+                    }
+
+                    PermissionUiState.REQUIRED -> {
+                        NotificationPermissionHandler(
+                            onGrantClick = {
+                                permissionLauncher.launch(
+                                    android.Manifest.permission.POST_NOTIFICATIONS
+                                )
+                            }
+                        )
+                    }
                 }
             }
         }

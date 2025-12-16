@@ -38,4 +38,18 @@
     <string name="delete">Delete</string>
     <string name="delete_all_print_jobs">Delete All Print Jobs</string>
     <string name="delete_all_jobs_description">Are you sure you want to delete all print jobs? This action cannot be undone.</string>
+    <string name="permission_required_title">Permission Required</string>
+    <string name="permission_required_message">Notification permissions are required for the printer service to run in the background and show print job notifications.</string>
+    <string name="grant_permission">Grant Permission</string>
+    <string name="continue_without_permission">Continue Without</string>
+    <string name="stop">Stop</string>
+    <string name="printer_active">Printer Active</string>
+    <string name="ready_to_receive">Ready to receive print jobs</string>
+    <string name="unknown_error">Unknown Error</string>
+    <string name="stopped">Stopped</string>
+    <string name="status_running">Service Status: Running</string>
+    <string name="status_error_mode">Service Status: Error</string>
+    <string name="status_starting">Service Status: Starting</string>
+    <string name="status_stopped">Service Status: Stopped</string>
+    <string name="status_unknown">Service Status: Unknown</string>
 </resources>
