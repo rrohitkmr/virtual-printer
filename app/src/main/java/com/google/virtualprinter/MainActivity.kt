@@ -64,6 +64,7 @@ class MainActivity : ComponentActivity() {
     }
     private var boundService: PrinterForegroundService? = null
     private var isBound = false
+    private val isServiceReady = mutableStateOf(false)
     private val printJobReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context, intent: android.content.Intent) {
             android.util.Log.d("MainActivity", "Received broadcast: ${intent.action}")
@@ -87,11 +88,13 @@ class MainActivity : ComponentActivity() {
                 boundService = PrinterForegroundService.getInstance()
             }
             isBound = boundService != null
+            isServiceReady.value = isBound
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
             boundService = null
             isBound = false
+            isServiceReady.value = false
         }
     }
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -161,10 +164,13 @@ class MainActivity : ComponentActivity() {
                     }
 
                     PermissionUiState.GRANTED -> {
-                        MainNavigation(
-                            printerService = PrinterService(this),
-                            viewModel = viewModel
-                        )
+                        val serviceReady by remember { isServiceReady }
+                        if (serviceReady && boundService != null) {
+                            MainNavigation(
+                                printerService = boundService!!.printerService,
+                                viewModel = viewModel
+                            )
+                        }
                     }
 
                     PermissionUiState.REQUIRED -> {
@@ -259,7 +265,6 @@ class MainActivity : ComponentActivity() {
 fun MainNavigation(printerService: PrinterService,viewModel: PrinterViewModel) {
     val context = LocalContext.current
     var currentScreen by remember { mutableStateOf("main") }
-    
     Scaffold(
         bottomBar = {
             NavigationBar {
@@ -356,7 +361,7 @@ fun PrinterApp(printerService: PrinterService,viewModel: PrinterViewModel) {
                 PrinterService.ServiceStatus.RUNNING ->
                     context.getString(
                         R.string.printer_service_running_printer_name,
-                        runningService?.printerService?.getPrinterName()
+                        printerService.getPrinterName()
                     )
 
                 PrinterService.ServiceStatus.STARTING ->
@@ -365,7 +370,7 @@ fun PrinterApp(printerService: PrinterService,viewModel: PrinterViewModel) {
                 PrinterService.ServiceStatus.ERROR_SIMULATION ->
                     context.getString(
                         R.string.printer_service_running_error_mode_printer_name,
-                        runningService?.printerService?.getPrinterName()
+                        printerService.getPrinterName()
                     )
 
                 PrinterService.ServiceStatus.STOPPED ->

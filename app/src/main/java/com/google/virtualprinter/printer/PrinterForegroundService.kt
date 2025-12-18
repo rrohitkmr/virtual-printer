@@ -137,7 +137,7 @@ class PrinterForegroundService : Service() {
         } catch (e: Exception) {
         }
         isServiceStarted = false
-        updateNotification(getString(R.string.printer_error), getString(R.string.stopped))
+        updateNotification(getString(R.string.app_name), getString(R.string.stopped))
     }
 
     private fun cleanupResources() {
