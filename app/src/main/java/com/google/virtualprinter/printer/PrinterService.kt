@@ -572,8 +572,15 @@ class PrinterService(private val context: Context) {
                                 Tag.jobAttributes,
                                 Types.jobId.of(jobId.toInt()),
                                 Types.jobUri.of(URI("ipp://localhost:$PORT/jobs/$jobId")),
-                                Types.jobState.of(5), // 5 = processing
-                                Types.jobStateReasons.of("processing-to-stop-point")
+                                Types.jobState.of(9), // 9 = completed
+                                Types.jobStateReasons.of("job-completed-successfully"), // Required completion reason
+                                Types.timeAtCompleted.of(System.currentTimeMillis().toInt() / 1000), // Required timestamp
+                                Types.timeAtCreation.of(System.currentTimeMillis().toInt() / 1000),
+                                Types.timeAtProcessing.of(System.currentTimeMillis().toInt() / 1000),
+                                Types.impressionsCompleted.of(1), // Required for completion
+                                Types.jobOriginatingUserName.of(request.attributeGroups.find { it.tag == Tag.operationAttributes }?.getValues(Types.requestingUserName)?.firstOrNull()?.toString() ?: "anonymous"),
+                                Types.jobName.of(request.attributeGroups.find { it.tag == Tag.operationAttributes }?.getValues(Types.jobName)?.firstOrNull()?.toString() ?: "Print Job"),
+                                Types.documentFormat.of(documentFormat)
                             )
                         )
                         logger.i(LogCategory.PRINT_JOB, TAG, "Accepted Print-Job", jobId = jobId,
@@ -587,6 +594,48 @@ class PrinterService(private val context: Context) {
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error processing Print-Job request", e)
+                    IppPacket(Status.serverErrorInternalError, request.requestId)
+                }
+            }
+            Operation.getJobAttributes.code -> { // Get-Job-Attributes operation
+                try {
+                    val jobId = request.attributeGroups
+                        .find { it.tag == Tag.operationAttributes }
+                        ?.getValues(Types.jobId)
+                        ?.firstOrNull()
+                    if (jobId == null) {
+                        IppPacket(Status.clientErrorBadRequest, request.requestId)
+                    } else {
+                        // Return job attributes with COMPLETED state
+                        val response = IppPacket(
+                            Status.successfulOk,
+                            request.requestId,
+                            AttributeGroup.groupOf(
+                                Tag.operationAttributes,
+                                Types.attributesCharset.of("utf-8"),
+                                Types.attributesNaturalLanguage.of("en")
+                            ),
+                            AttributeGroup.groupOf(
+                                Tag.jobAttributes,
+                                Types.jobId.of(jobId),
+                                Types.jobUri.of(URI("ipp://localhost:$PORT/jobs/$jobId")),
+                                Types.jobState.of(9), //  completed state
+                                Types.jobStateReasons.of("job-completed-successfully"),
+                                Types.timeAtCompleted.of(System.currentTimeMillis().toInt() / 1000),
+                                Types.timeAtCreation.of(System.currentTimeMillis().toInt() / 1000),
+                                Types.timeAtProcessing.of(System.currentTimeMillis().toInt() / 1000),
+                                Types.impressionsCompleted.of(1),
+                                Types.jobOriginatingUserName.of("user"),
+                                Types.jobName.of("Print Job $jobId"),
+                                Types.documentFormat.of("application/pdf")
+                            )
+                        )
+                        Log.d(TAG, "Get-Job-Attributes for job $jobId: returning COMPLETED state")
+                        response
+                    }
+
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error processing Get-Job-Attributes request", e)
                     IppPacket(Status.serverErrorInternalError, request.requestId)
                 }
             }
@@ -705,7 +754,14 @@ class PrinterService(private val context: Context) {
                                 Types.jobId.of(actualJobId.toInt()),
                                 Types.jobUri.of(URI("ipp://localhost:$PORT/jobs/$actualJobId")),
                                 Types.jobState.of(if (isLastDocument) 9 else 4), // 9 = completed, 4 = processing
-                                Types.jobStateReasons.of(if (isLastDocument) "job-completed-successfully" else "job-incoming")
+                                Types.jobStateReasons.of(if (isLastDocument) "job-completed-successfully" else "job-incoming"),
+                                Types.timeAtCompleted.of(System.currentTimeMillis().toInt() / 1000),
+                                Types.timeAtCreation.of(System.currentTimeMillis().toInt() / 1000),
+                                Types.timeAtProcessing.of(System.currentTimeMillis().toInt() / 1000),
+                                Types.impressionsCompleted.of(1),
+                                Types.jobOriginatingUserName.of(request.attributeGroups.find { it.tag == Tag.operationAttributes }?.getValues(Types.requestingUserName)?.firstOrNull()?.toString() ?: "anonymous"),
+                                Types.jobName.of(request.attributeGroups.find { it.tag == Tag.operationAttributes }?.getValues(Types.jobName)?.firstOrNull()?.toString() ?: "Send Document"),
+                                Types.documentFormat.of(documentFormat)
                             )
                         )
                         

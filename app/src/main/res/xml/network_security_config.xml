@@ -36,7 +36,7 @@
     </domain-config>
     
     <!-- Default: No cleartext traffic for external domains -->
-    <base-config cleartextTrafficPermitted="false">
+    <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates src="system" />
         </trust-anchors>
